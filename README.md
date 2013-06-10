@@ -13,7 +13,7 @@ WHY BtCP?
 -----------
 
 BtCP was designed to provide a way to continuously copy files (a kind of data pipeline) with the following requirements:
- * automatically re-flow data via a faster data center (If we need to copy files from datacenter A to B and C, and connection between A and B is slow - the data to A will be copied mostly via C)
+ * automatically re-flow data via a faster data center (If a file is copied from datacenter A to B and C, and connection between A and B is slow - the data to A will be copied mostly via C)
  * copy data no more than once across a datanceter
  * bandwidth throttling
 
