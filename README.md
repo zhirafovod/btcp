@@ -1,6 +1,6 @@
-BtCP by Sergey Sergeev <zhirafovod@gmail.com>
+Bittorrent copy (BtCP) by Sergey Sergeev <zhirafovod@gmail.com>
 
-Copyright Sergey Sergeev
+Copyright 2013 Sergey Sergeev <zhirafovod@gmail.com>
 
 DESCRIPTION
 -----------
