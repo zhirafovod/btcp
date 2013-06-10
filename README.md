@@ -17,7 +17,7 @@ BtCP was designed to provide a way to continuously copy files (a kind of data pi
  * copy data no more than once across a datanceter
  * bandwidth throttling
 
-If your goal is to distribute a file in a datacenter via Bittorent - please check [Murder](https://github.com/lg/murder), which works great for that, which is awesome for unfrequent file deployments
+If your goal is to distribute a file in a datacenter via Bittorent - please check [Murder](https://github.com/lg/murder), which works great for that
 
 REQUIREMENTS
 -----------
