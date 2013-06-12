@@ -26,22 +26,30 @@ Deployment of a distributed framework heavily depends on deployment/configuratio
 ### Chef-solo
 
  * install chef and git packages (example for debian/ubuntu):
-    DEBIAN_FRONTEND=noninteractive sudo apt-get -y install chef git
+    sudo DEBIAN_FRONTEND=noninteractive apt-get -y install chef git
  * clone BtCP 
+<pre>
+    SUDO="" && test -x /usr/bin/sudo && SUDO="/usr/bin/sudo" || [ $UID -eq 0 ] && \
+    $SUDO DEBIAN_FRONTEND=noninteractive apt-get -y install chef git && \
     git clone https://github.com/zhirafovod/btcp.git && \
     cd btcp/btcp-cassandra/ && \
-    test -d /var/chef-solo || mkdir /var/chef-solo && \ 
-    cp -rp files/cookbooks /var/chef-solo/ && \
-    chef-solo -c files/solo.rb -j files/btcp-cassandra.json
+    test -d /var/chef-solo || $SUDO mkdir /var/chef-solo && \ 
+    $SUDO cp -rp files/cookbooks /var/chef-solo/ && \
+    $SUDO chef-solo -c files/solo.rb -j files/btcp-cassandra.json
+</pre>
 
 ### Debian package
 
 Debian package is useful in conjunction with a debian repostiory, to process debian package dependencies properly.
 
  * clone BtCP:
-    git clone https://github.com/zhirafovod/btcp.git && cd btcp/btcp-cassandra/
+<pre>
+    SUDO="" && test -x /usr/bin/sudo && SUDO="/usr/bin/sudo" || [ $UID -eq 0 ] && \
+    $SUDO DEBIAN_FRONTEND=noninteractive apt-get -y install git dpkg-dev debhelper && \
+    git clone https://github.com/zhirafovod/btcp.git && cd btcp/btcp-cassandra/ && \
+    dpkg-buildpackage -d -rfakeroot -uc -us 
+</pre>
  * build debian package:
-    dpkg-buildpackage -rfakeroot -uc -us 
  * Upload 'deb' file to your repository
 
 ### Chef-client
