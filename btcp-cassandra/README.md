@@ -26,9 +26,13 @@ Deployment of a distributed framework heavily depends on deployment/configuratio
 ### Chef-solo
 
  * install chef and git packages (example for debian/ubuntu):
-    DEBIAN_FRONTEND=noninteractive apt-get -y install chef git
+    DEBIAN_FRONTEND=noninteractive sudo apt-get -y install chef git
  * clone BtCP 
-    git clone https://github.com/zhirafovod/btcp.git && cd btcp/btcp-cassandra/
+    git clone https://github.com/zhirafovod/btcp.git && \
+    cd btcp/btcp-cassandra/ && \
+    test -d /var/chef-solo || mkdir /var/chef-solo && \ 
+    cp -rp files/cookbooks /var/chef-solo/ && \
+    chef-solo -c files/solo.rb -j files/btcp-cassandra.json
 
 ### Debian package
 
