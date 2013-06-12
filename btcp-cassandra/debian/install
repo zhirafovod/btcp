@@ -1,4 +1,4 @@
 files/cookbooks/* var/chef/cookbooks 
-files/cassandra/* var/tmp/
-files/chef/* var/chef/cache
-files/etc/source.list.d/* etc/apt/sources.list.d/
+files/cassandra/*.data var/tmp/
+files/cookbooks/btcp-cassandra/files/default/btcp-cassandra.json var/chef/cache/
+files/cookbooks/btcp-cassandra/files/default/cassandra.list etc/apt/sources.list.d/

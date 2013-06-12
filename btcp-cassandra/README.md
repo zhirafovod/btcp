@@ -23,14 +23,27 @@ DEPLOYMENT
 
 Deployment of a distributed framework heavily depends on deployment/configuration infrastructure. OpsCode Chef cookbooks are supplied and can be used either with chef-solo or with chef-client. Additionally debian package can be built. 
 
-### Debian Package
+### Chef-solo
 
-    git clone https://github.com/zhirafovod/btcp/btcp-cassandra.git && cd btcp-cassandra/
-Change ip address in file "files/cookbooks/btcp-cassandra/files/default/cassandra.yaml.erb", build debian package
+ * install chef and git packages (example for debian/ubuntu):
+    DEBIAN_FRONTEND=noninteractive apt-get -y install chef git
+ * clone BtCP 
+    git clone https://github.com/zhirafovod/btcp.git && cd btcp/btcp-cassandra/
+
+### Debian package
+
+Debian package is useful in conjunction with a debian repostiory, to process debian package dependencies properly.
+
+ * clone BtCP:
+    git clone https://github.com/zhirafovod/btcp.git && cd btcp/btcp-cassandra/
+ * build debian package:
     dpkg-buildpackage -rfakeroot -uc -us 
-Use your way to deploy a file "../btcp-cassandra_0.0.0-1_all.deb" and install it on a node (the simplies one is to copy the file and run)
-    apt-get -y --force-yes install chef
-    dpkg -i ./btcp-cassandra_0.0.0-1_all.deb
+ * Upload it to your repository.
+
+### Chef-client
+
+ * Use cookbook [cassasndra](http://community.opscode.com/cookbooks/cassandra/) to deploy Cassandra cluster. 
+ * Create keyspace and columnfamilies using cookbook [btcp-cassandra](https://github.com/zhirafovod/btcp/tree/master/btcp-cassandra/files/cookbooks/btcp-cassandra) 
 
 LICENSE
 -----------

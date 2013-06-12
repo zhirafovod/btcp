@@ -1,68 +1,63 @@
-#node.keys().each do |k|
-#  puts k
-#end
-#node['vagrant']['config']['keys']['vm'].keys().each do |k|
-#  puts k
-#end
-#puts node['ipaddress']
+#
+# Cookbook Name::       btcp-cassandra
+# Description::         BtCP specific configuration for Cassandra
+# Recipe::              default
+# Author::              Sergey Sergeev ( zhirafovod@gmail.com )
+#
+# Copyright 2013, Sergey Sergeev <zhirafovod@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-# puts 
-debian_version = File.open('/etc/debian_version'){ |file| file.read }
-if debian_version.start_with? "wheezy"
-        cookbook_file "/etc/apt/sources.list" do
-                source "sources.list.wheezy.erb"
-                mode "0644"
-                owner "root"
-                group "root"
-                action :create
-                notifies :run, "execute[aptitude update]", :immediately
-        end
-elsif debian_version.start_with? "6"
-        #squeeze
-        cookbook_file "/etc/apt/sources.list" do
-                source "sources.list.wheezy.erb"
-                mode "0644"
-                owner "root"
-                group "root"
-                action :create
-                notifies :run, "execute[aptitude update]", :immediately
-        end
-        execute "apt-get -y --force-yes dist-upgrade"
+cookbook_file "/etc/apt/sources.list.d/cassandra.list" do
+	source "cassandra.list"
+	mode "0644"
+  owner "root"
+  group "root"
+  action :create
 end
 
-execute "aptitude update" do
-  action :nothing
+cookbook_file "/var/tmp/create.data" do
+	source "create.data"
+	mode "0644"
+  owner "root"
+  group "root"
+  action :create
 end
 
+cookbook_file "/var/tmp/recreate.data" do
+	source "recreate.data"
+	mode "0644"
+  owner "root"
+  group "root"
+  action :create
+end
+
+# add remote repository keys to install Cassandra and Chef
 execute "gpg --keyserver pgp.mit.edu --recv-keys F758CE318D77295D"
 execute "gpg --export --armor F758CE318D77295D | apt-key add -"
 execute "gpg --keyserver pgp.mit.edu --recv-keys 2B5C1B00"
 execute "gpg --export --armor 2B5C1B00 | apt-key add -"
 execute "gpg --fetch-key http://apt.opscode.com/packages@opscode.com.gpg.key"
 execute "gpg --export packages@opscode.com | tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg > /dev/null"
-
 execute "aptitude update"
 
 package 'cassandra'
 
-user "vagrant" do
-  comment "vagrant user for python-btcp-daemon"
-  system true
-  shell "/bin/false"
-end
-
-# install packages
-package 'screen'
-package 'vim'
-
-# init data on the master
-execute "cassandra-cli -h localhost -f /var/tmp/create.data"
 
 # install cassandra configuration
 service "cassandra" do
   action :stop
 end
-
 
 cookbook_file "/etc/cassandra/cassandra.yaml" do
 	source "cassandra.yaml.erb"
@@ -72,6 +67,10 @@ cookbook_file "/etc/cassandra/cassandra.yaml" do
   action :create
 end
 
-#service "transmission-daemon" do
-#  action :start
-#end
+service "cassandra" do
+  action :restart
+end
+
+
+# init data on the master
+execute "cassandra-cli -h localhost -f /var/tmp/create.data"
