@@ -1,0 +1,6 @@
+*-spamp
+debian/btcp-cassandra
+debian/btcp-cassandra.debhelper.log
+debian/files
+.*.swp
+*.pyc

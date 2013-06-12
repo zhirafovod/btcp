@@ -1,0 +1,4 @@
+files/cookbooks/* var/chef/cookbooks 
+files/cassandra/* var/tmp/
+files/chef/* var/chef/cache
+files/etc/source.list.d/* etc/apt/sources.list.d/
