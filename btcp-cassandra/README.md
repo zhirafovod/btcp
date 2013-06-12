@@ -38,7 +38,7 @@ Debian package is useful in conjunction with a debian repostiory, to process deb
     git clone https://github.com/zhirafovod/btcp.git && cd btcp/btcp-cassandra/
  * build debian package:
     dpkg-buildpackage -rfakeroot -uc -us 
- * Upload it to your repository.
+ * Upload 'deb' file to your repository
 
 ### Chef-client
 
