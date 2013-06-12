@@ -18,6 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# deploy required files
 cookbook_file "/etc/apt/sources.list.d/cassandra.list" do
 	source "cassandra.list"
 	mode "0644"
@@ -25,7 +26,6 @@ cookbook_file "/etc/apt/sources.list.d/cassandra.list" do
   group "root"
   action :create
 end
-
 cookbook_file "/var/tmp/create.data" do
 	source "create.data"
 	mode "0644"
@@ -33,7 +33,6 @@ cookbook_file "/var/tmp/create.data" do
   group "root"
   action :create
 end
-
 cookbook_file "/var/tmp/recreate.data" do
 	source "recreate.data"
 	mode "0644"
@@ -51,14 +50,13 @@ execute "gpg --fetch-key http://apt.opscode.com/packages@opscode.com.gpg.key"
 execute "gpg --export packages@opscode.com | tee /etc/apt/trusted.gpg.d/opscode-keyring.gpg > /dev/null"
 execute "aptitude update"
 
+# install cassandra from the repository above
 package 'cassandra'
-
 
 # install cassandra configuration
 service "cassandra" do
   action :stop
 end
-
 cookbook_file "/etc/cassandra/cassandra.yaml" do
 	source "cassandra.yaml.erb"
 	mode "0644"
@@ -66,11 +64,9 @@ cookbook_file "/etc/cassandra/cassandra.yaml" do
   group "root"
   action :create
 end
-
 service "cassandra" do
   action :restart
 end
-
 
 # init data on the master
 execute "cassandra-cli -h localhost -f /var/tmp/create.data"
