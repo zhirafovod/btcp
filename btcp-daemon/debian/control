@@ -1,0 +1,15 @@
+Source: btcp-daemon
+Section: main/python-btcp-daemon
+Priority: extra
+Maintainer: Sergey Sergeev <zhirafovod@gmail.com>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+Package: btcp-daemon
+Architecture: all
+Depends: python-twisted, python2.7, transmission-daemon, python-pip, chef, zabbix-agent, screen, vim
+Provides: role
+Conflicts: role
+Description: python-btcp-daemon
+ Component to configure BtCP daemon
+ Sources:
+ https://github.com/zhirafovod/btcp
