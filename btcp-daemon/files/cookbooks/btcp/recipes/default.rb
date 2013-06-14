@@ -41,15 +41,15 @@ user "vagrant" do
 end
 
 # install packages
-#package 'python-twisted'
-#package 'python2.7'
-#package 'transmission-daemon'
-#package 'python-transmissionrpc'
-#package 'python-pip' do
-#  action :install
-#end
-#package 'screen'
-#package 'vim'
+package 'python-twisted'
+package 'python2.7'
+package 'transmission-daemon'
+package 'python-transmissionrpc'
+package 'python-pip' do
+  action :install
+end
+package 'screen'
+package 'vim'
 
 # install python modules for each module in the array separated by whitespaces
 python_virtualenv = "/var/lib/btcp/python"
