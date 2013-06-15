@@ -4,8 +4,8 @@ file "/etc/hosts" do
 end
 
 # parse /etc/resolv.conf name, return container name if string conain pattern like 'search dmpws1-1.sla71.mycmdb.net sla71.mycmdb.net'
-node['container_name'] = node['name']
-File.open('/etc/resolv.conf') { |f| f.each_line { |l| node['container_name'] = $1 if l.match('^search\s+([^\.]+\.[^\.]+)') } }
+node.default['container_name'] = node['name']
+File.open('/etc/resolv.conf') { |f| f.each_line { |l| node.default['container_name'] = $1 if l.match('^search\s+([^\.]+\.[^\.]+)') } }
 
 debian_version = File.open('/etc/debian_version'){ |file| file.read }
 if debian_version.start_with? "wheezy"
