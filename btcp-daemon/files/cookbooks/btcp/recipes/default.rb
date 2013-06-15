@@ -1,7 +1,7 @@
 # remove /etc/hosts
-file "/etc/hosts" do
-  action :delete
-end
+#file "/etc/hosts" do
+#  action :delete
+#end
 
 # parse /etc/resolv.conf name, return container name if string conain pattern like 'search dmpws1-1.sla71.mycmdb.net sla71.mycmdb.net'
 node.default['container_name'] = node['name']
@@ -34,11 +34,11 @@ execute "aptitude update" do
   action :nothing
 end
 
-user "vagrant" do
-  comment "vagrant user for python-btcp-daemon"
-  system true
-  shell "/bin/false"
-end
+#user "vagrant" do
+#  comment "vagrant user for python-btcp-daemon"
+#  system true
+#  shell "/bin/false"
+#end
 
 # install packages
 package 'python-twisted'
@@ -107,19 +107,68 @@ service "transmission-daemon" do
   action :restart
 end
 
-# create btcp node configuration
-directory "/etc/btcp" do
-  owner "vagrant"
-  group "vagrant"
-  mode 0755
-  action :create
+# deploy libraries
+remote_directory "/usr/lib/python2.7/dist-packages" do
+  source "src"
+  files_backup 10
+  files_owner "root"
+  files_group "root"
+  files_mode 00644
+  #owner "nobody"
+  #group "nobody"
+  #mode 00755
+  action :create_if_missing	
 end
 
-# configure node name 
+# deploy executables
+remote_directory "/usr/local/bin" do
+  source "bin"
+  files_backup 10
+  files_owner "root"
+  files_group "root"
+  files_mode 00755
+  #owner "nobody"
+  #group "nobody"
+  #mode 00755
+  action :create_if_missing	
+end
+
+# deploy configuration
+remote_directory "/etc/btcp" do
+  source "etc/btcp"
+  files_backup 10
+  files_owner "root"
+  files_group "root"
+  files_mode 00755
+  #owner "nobody"
+  #group "nobody"
+  #mode 00755
+  action :create_if_missing	
+end
+
+# create configuration from template
 template "/etc/btcp/btcp.conf" do
   source "btcp.conf.erb"
   mode "0644"
-  owner "vagrant"
-  group "vagrant"
+  #owner "vagrant"
+  #group "vagrant"
   action :create
+end
+
+# deploy init.d scripts
+remote_directory "/etc/init.d" do
+  source "init.d"
+  files_backup 10
+  files_owner "root"
+  files_group "root"
+  files_mode 00755
+  #owner "nobody"
+  #group "nobody"
+  #mode 00755
+  action :create_if_missing	
+end
+
+# start btcp daemon
+service "btcp-daemon" do
+  action :restart
 end
