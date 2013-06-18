@@ -18,6 +18,7 @@ import re
 from datetime import datetime
 import shutil
 import os
+import random
 
 class BtCP(object):
   ''' Root class for the project '''
@@ -268,25 +269,59 @@ class BtCP(object):
       self.blog.debug('add_torrent: error: %s' %(str(sys.exc_info()),))
       raise 
 
+  def groupByPattern(self, dr, pattern='.*(\D{2})\d+$'):
+    ''' group Data Receivers to list matching against 'pattern' 
+        default is to match nodes by 2 letters identifying node's Data Center ('s(tx)123' => tx, for example)
+        return dict of groups with list of matched nodes, for example: { 'unknown': ['testnode'], 'tx': ['stx1','stx2','stx3'], 'va': ['sva1','sva2','sva3'] } 
+    '''
+    drs = re.sub('\s','',dr).split(',') # remove white-spaces, split to an array by ',', map to dict with a New status
+    r = {};    # dict to store result list
+    for node in drs: 
+      g = 'unknown'    # 'unknown' group by default
+      m = re.match(pattern, node)  
+      if m.group(1):    # set group if node name matched to regex 'pattern'
+        g = m.group(1)    
+      r[g] = r.get(g, []) + [node]    # add node to group list
+    return r    
+
+  def prioritizeNodes(self, l):
+    ''' receives a dict 'l' with nodes grouped by a key, for example: { 'unknown': ['testnode'], 'tx': ['stx1','stx2','stx3'], 'va': ['sva1','sva2','sva3'] } 
+        return a dict of nodes and turns for each node (who will download 1st, who will download 2nd), example: { 'testnode': 1, 'stx1': 2, 'stx2': 2, 'stx3': 1, ...} 
+    '''
+    t = ();    # a dict of nodes to turns
+    for k in l.keys():
+      for n in l(k):
+        t[n] = 2    # set everybody to the 2nd turn by default
+      t[random.choice(l[k])] = 1    # set one random node to turn 1
+    return t
+
   def publish(self, f, btdata, dr):
     ''' put files for dr to Flow Control server 
           f - string, file to transfer
           btdata - string, file data to transfer
           dr - string, data receivers '''
     ''' !!! Code me - need actual code to put files to FC server '''
-    drs = { x: 'new' for x in re.sub('\s','',dr).split(',') } # remove white-spaces, split to an array by ',', map to dict with a New status
-    drs[self.node_name] = 'seeding'
-    if len(drs) == 0:
-      self.blog.debug('No Data Receivers recognized in string dr: %s' %(dr,))
-      raise 'No Data Receivers recognized in string dr: %s' %(dr,)
+
     try: # check if the file already exist
-      q = self.cf['queue'].get(f)
+      q = self.cf['files'].get(f)
       self.blog.debug('Error publishing f: %s, file already exist in the queue: %s' %(f,q,))
       return 'Error publishing f: %s, file already exist in the queue: %s' %(f,q,)
     except pycassa.cassandra.ttypes.NotFoundException:
       self.blog.debug('checked that f: %s is not in the queue' %(f,))
       pass
-    self.start_torrent(f, btdata) # start torrent file for file named 'f' and bittorrent data 'btdata'
+
+    nodesGrouped = self.groupByPatterns(dr)    # group nodes by pattern
+    nodesPrioritized = self.planCopy(dr)    # prioritize nodes in each group, selecting one node in each group for 1st copy turn, the rest for 2nd turn
+    drs[self.node_name] = 'seeding'
+    if len(nodesPrioritized) == 0:
+      self.blog.debug('No Data Receivers recognized in string dr: %s' %(dr,))
+      raise 'No Data Receivers recognized in string dr: %s' %(dr,)
+
+    self.start_torrent(f, btdata)    # start torrent file for file named 'f' and bittorrent data 'btdata'
+    #self.storeData(f, btdata, dr, nodesGrouped, nodesPrioritized)    # 
+
+    drs = { x: 'new' for x in re.sub('\s','',dr).split(',') } # remove white-spaces, split to an array by ',', map to dict with a New status 
+
     try: # insert data to cassandra
       # put detailed information about file
       self.cf['files'].insert(f, {'btdata': btdata, 'status': 'new', 'source': 'localhost', 'drs': dr, 'ds': self.node_name})
