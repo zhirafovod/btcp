@@ -291,16 +291,16 @@ class BtCP(object):
     t = {};    # a dict of nodes to turns
     for k in d.keys():
       for n in d[k]:
-        t[n] = 2    # set everybody to the 2nd turn by default
-      t[random.choice(d[k])] = 1    # set one random node to turn 1
+        t[n] = '2'    # set everybody to the 2nd turn by default
+      t[random.choice(d[k])] = '1'    # set one random node to turn 1
     return t
 
   def publish(self, f, btdata, dr):
     ''' put files for dr to Flow Control server 
           f - string, file to transfer
           btdata - string, file data to transfer
-          dr - string, data receivers '''
-    ''' !!! Code me - need actual code to put files to FC server '''
+          dr - string, data receivers 
+    '''
 
     try: # check if the file already exist
       q = self.cf['files'].get(f)
@@ -310,42 +310,42 @@ class BtCP(object):
       self.blog.debug('checked that f: %s is not in the queue' %(f,))
       pass
 
-    drs = { x: 'new' for x in re.sub('\s','',dr).split(',') } # remove white-spaces, split to an array by ',', map to dict with a New status 
-
     nodesGrouped = self.groupByPattern(dr)    # group nodes by pattern
     nodesPrioritized = self.prioritizeNodes(nodesGrouped)    # prioritize nodes in each group, selecting one node in each group for 1st copy turn, the rest for 2nd turn
     if len(nodesPrioritized) == 0:
       self.blog.debug('No Data Receivers recognized in string dr: %s' %(dr,))
       raise 'No Data Receivers recognized in string dr: %s' %(dr,)
-    drs[self.node_name] = 'seeding'
 
     self.start_torrent(f, btdata)    # start torrent file for file named 'f' and bittorrent data 'btdata'
-    #self.storeData(f, btdata, dr, nodesGrouped, nodesPrioritized)    # 
+    self.publishData(f, btdata, dr, nodesGrouped, nodesPrioritized)    # 
 
+  def publishData(self, f, btdata, dr, nodesGrouped, nodesPrioritized):
+    ''' publish all information related to file to Cassandra '''
 
-    try: # insert data to cassandra
-      # put detailed information about file
-      self.cf['files'].insert(f, {'btdata': btdata, 'status': 'new', 'source': 'localhost', 'drs': dr, 'ds': self.node_name})
-      self.blog.debug('files.insert: %s, drs: %s' %(f,drs,))
-      # put information about dataa sender
-      self.cf['ds'].insert(self.node_name, {f: 'seeding'})
-      self.blog.debug('ds.insert: %s, ds: %s' %(f, self.node_name, ))
-      # insert file to each Data Receivers queue
-      for r in drs:
-        if r == self.node_name:
-          self.cf['dr'].insert(r, {f: 'seeding'})
-          self.blog.debug('dr.insert: %s, drs: %s' %(f,r,))
-        else:
-          self.cf['dr'].insert(r, {f: 'new'})
-          self.blog.debug('dr.insert: %s, drs: %s' %(f,r,))
-      # add file to global queue, with dataa receivers statuses
-      self.cf['queue'].insert(f, drs)
-      self.blog.debug('queue.insert: %s, drs: %s' %(f,str(drs),))
-      self.blog.debug('Sucessfully inserted: f: %s, drs: %s' %(f, drs, ))
-      return None
-    except:
-      self.blog.debug( "Exception: a problem occured publishing f: %s, dr: %s): %s" %(f, dr, sys.exc_info()[0]), )
-      raise
+    p = {    # file properties
+      'btdata': btdata,      # Bittorrent data 
+      'status': 'new',       # status - new
+      'tier': '1',           # status - new
+      'drs': dr,             # string with list of all Data Receivers
+      'ds': self.node_name   # Data Source
+      }
+    self.cf['files'].insert(f, p)    # publish file properties
+    self.blog.debug('files.insert: %s, nodes: %s' %(f,nodesPrioritized,))
+    
+    self.cf['ds'].insert(self.node_name, {f: 'seeding'})    # put information about data sender
+    self.blog.debug('ds.insert: %s, ds: %s' %(f, self.node_name, ))
+   
+    for r in nodesPrioritized:    # insert file to each Data Receivers queue
+      if r == self.node_name:
+        self.cf['dr'].insert(r, {f: 'seeding'})
+        self.blog.debug('dr.insert: %s, node: %s' %(f,r,))
+      elif nodesPrioritized[r] == 1:    # starting tier 1 here
+        self.cf['dr'].insert(r, {f: 'new'})
+        self.blog.debug('dr.insert: %s, node: %s' %(f,r,))
+    
+    self.cf['queue'].insert(f, nodesPrioritized)    # add file to global queue, with dataa receivers statuses
+    self.blog.debug('queue.insert: %s, nodes: %s' %(f,str(nodesPrioritized),))
+    self.blog.debug('Sucessfully inserted: f: %s, drs: %s' %(f, nodesPrioritized, ))
 
   def getBtData(self, fn):
     try:
