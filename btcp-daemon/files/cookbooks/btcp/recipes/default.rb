@@ -117,7 +117,7 @@ remote_directory "/usr/lib/python2.7/dist-packages" do
   #owner "nobody"
   #group "nobody"
   #mode 00755
-  action :create_if_missing	
+  action :create
 end
 
 # deploy executables
@@ -130,7 +130,7 @@ remote_directory "/usr/local/bin" do
   #owner "nobody"
   #group "nobody"
   #mode 00755
-  action :create_if_missing	
+  action :create
 end
 
 # deploy configuration
@@ -143,7 +143,7 @@ remote_directory "/etc/btcp" do
   #owner "nobody"
   #group "nobody"
   #mode 00755
-  action :create_if_missing	
+  action :create
 end
 
 # create configuration from template
@@ -165,7 +165,7 @@ remote_directory "/etc/init.d" do
   #owner "nobody"
   #group "nobody"
   #mode 00755
-  action :create_if_missing	
+  action :create
 end
 
 # start btcp daemon
