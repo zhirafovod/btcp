@@ -1,5 +1,5 @@
 files/cookbooks/* var/chef/cookbooks 
-src/* usr/lib/python2.7/dist-packages
-src/btcp/btcp.tac etc/btcp
+files/cookbooks/btcp/files/default/src/* usr/lib/python2.7/dist-packages
+files/cookbooks/btcp/files/default/etc/btcp/btcp.tac etc/btcp
 files/bin/* usr/bin
 files/chef/* var/chef/cache
