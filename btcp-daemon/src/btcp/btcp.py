@@ -66,7 +66,7 @@ class BtCP(object):
     config = ConfigParser.ConfigParser()
     config.read(config_name)
     self.node_name= config.get('btcp', 'hostname')    # node host name
-    self.domain = config.get('btcp', 'domain')        # node domain
+    #self.domain = config.get('btcp', 'domain')        # node domain <- obsolete 
     self.interval = int(config.get('btcp', 'interval'))    # interval for clients to check tracker updates
     self.logLevel = config.get('btcp', 'logLevel')    # logging verbosity (DEBUG|WARNING|INFO)
     self.cassa_keyspace = config.get('btcp', 'cassa_keyspace')     # cassandra keyspace name
@@ -167,7 +167,7 @@ class BtCP(object):
     if not files or not dr:
       return self.copy.__doc__ 
     for f in files:
-      tracker_url = 'http://%s.%s:9200/ann?ls=topsecret' % (self.node_name, self.domain,)
+      tracker_url = 'http://%s:9200/ann?ls=topsecret' % (self.node_name,)
       btdata = make_torrent_file(file = f, tracker = tracker_url, comment = None)
       self.blog.debug('btdata for file %s created' % (f))
       r = self.publish(f, btdata, dr)
