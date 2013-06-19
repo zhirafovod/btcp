@@ -300,7 +300,7 @@ class BtCP(object):
     for k in d.keys():
       for n in d[k]:
         t[n] = '2'    # set everybody to the 2nd priority by default
-      t[random.choice(d[k])] = '1'    # set one random node for a group priority 1
+      t[random.choice(d[k])] = 'new'    # select one random node for a group to be downloaded
     return t
 
   def publish(self, f, btdata, dr):
