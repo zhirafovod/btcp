@@ -68,9 +68,25 @@ class FlowControl(object):
     self.f.btcp.downloaded[n] = datetime.utcnow()
     logging.debug('markDownloaded(): file %s has just been finished downloading: %s' %(n, self.f.btcp.cf['dr'].get(self.f.btcp.node_name, )))
 
-  def startGroupDownload(self, drs, n):
+  def startGroupDownload(self, drs, n, group):
     ''' if group is not started - publish torrent 'n' for a group of 'drs' '''
-    logging.debug('startGroupDownload(): group %s, starting torrent file %s on node %s' %(str(nodesGrouped[group]),n,self.f.btcp.node_name,))
+    logging.debug('startGroupDownload(): nodes %s, starting torrent file %s on node %s' %(str(drs), n, self.f.btcp.node_name,))
+
+    btdata = self.f.btcp.cf['files'].get(n)['btdata']
+    torrent = decode(btdata)
+    torrent['announce'] = 'http://%s:9200/ann?ls=topsecret' % (self.f.btcp.node_name,)
+    btdata = encode(torrent)
+    key = 'btdata' + group
+    self.cf['files'].insert(n, {key: btdata})
+    logging.debug('startGroupDownload(): published %s for file %s, announce %s' %(key, n, 'http://%s:9200/ann?ls=topsecret' % (self.f.btcp.node_name,),))
+
+    for r in drs:    # insert file to each Data Receivers queue
+      if r != self.node_name:
+        self.cf['dr'].insert(r, {f: 'group'})
+        self.blog.debug('dr.insert: group: %s, node: %s' %(f,r,))
+
+    self.blog.debug('Sucessfully inserted: f: %s, drs: %s' %(f, drs, ))
+    
 
   def checkGroupDownloaded(self, drs, n):
     ''' check if download is not started in the group - publish torrent for a group '''
@@ -80,7 +96,7 @@ class FlowControl(object):
     group = self.f.btcp.groupName(self.f.btcp.node_name)
     for dr in nodesGrouped[group]:
       if drs[dr] == '2':
-        self.startGroupDownload(drs, nodesGrouped[group])
+        self.startGroupDownload(nodesGrouped[group], n, group)
 	return None
     logging.debug('checkGroupDownloaded(): group %s is already downloading file %s' %(str(nodesGrouped[group]),n,))
 

@@ -346,7 +346,7 @@ class BtCP(object):
       if r == self.node_name:
         self.cf['dr'].insert(r, {f: 'seeding'})
         self.blog.debug('dr.insert: %s, node: %s' %(f,r,))
-      elif nodesPrioritized[r] == 1:    # starting tier 1 here
+      elif nodesPrioritized[r] == 'new':    # starting tier 1 here
         self.cf['dr'].insert(r, {f: 'new'})
         self.blog.debug('dr.insert: %s, node: %s' %(f,r,))
     
