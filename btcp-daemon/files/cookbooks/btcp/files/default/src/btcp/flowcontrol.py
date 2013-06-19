@@ -77,15 +77,15 @@ class FlowControl(object):
     torrent['announce'] = 'http://%s:9200/ann?ls=topsecret' % (self.f.btcp.node_name,)
     btdata = encode(torrent)
     key = 'btdata' + group
-    self.cf['files'].insert(n, {key: btdata})
+    self.f.btcp.cf['files'].insert(n, {key: btdata})
     logging.debug('startGroupDownload(): published %s for file %s, announce %s' %(key, n, 'http://%s:9200/ann?ls=topsecret' % (self.f.btcp.node_name,),))
 
     for r in drs:    # insert file to each Data Receivers queue
-      if r != self.node_name:
-        self.cf['dr'].insert(r, {f: 'group'})
-        self.blog.debug('dr.insert: group: %s, node: %s' %(f,r,))
+      if r != self.f.btcp.node_name:
+        self.f.btcp.cf['dr'].insert(r, {f: 'group'})
+        logging.debug('dr.insert: group: %s, node: %s' %(f,r,))
 
-    self.blog.debug('Sucessfully inserted: f: %s, drs: %s' %(f, drs, ))
+    logging.debug('Sucessfully inserted: f: %s, drs: %s' %(f, drs, ))
     
 
   def checkGroupDownloaded(self, drs, n):
