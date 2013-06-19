@@ -174,6 +174,15 @@ class FlowControl(object):
         self.f.btcp.cf['queue'].insert(n, {self.f.btcp.node_name: 'downloading'}) # change status to downloading
         self.f.btcp.checkTransmission() # update torrents list
         logging.debug('checkCassandraQueues() %s torrent added to torrent client, status in cassandra changed to downloading...' %(n,))
+      elif ts[n] == 'group':    # new status for group download
+        logging.debug('checkCassandraQueues() %s is a group status, adding torrent to downloads...' %(n,))
+        group = self.f.btcp.groupName(self.f.btcp.node_name)    # determine node group
+        btdata = self.f.btcp.cf['files'].get(n)['btdata' + group]
+        self.f.btcp.add_torrent(n, btdata) 
+        self.f.btcp.cf['dr'].insert(self.f.btcp.node_name, {n: 'downloading'}) # change status to downloading
+        self.f.btcp.cf['queue'].insert(n, {self.f.btcp.node_name: 'downloading'}) # change status to downloading
+        self.f.btcp.checkTransmission() # update torrents list
+        logging.debug('checkCassandraQueues() %s torrent added to torrent client, status in cassandra changed to downloading...' %(n,))
       elif ts[n] == 'finished': # the file is marked as finished
         if n in self.f.btcp.tc_torrents:
           self.f.btcp.save_torrent_stats(n, self.f.btcp.tc_torrents[n].id) # save torrent stats to cassandra
