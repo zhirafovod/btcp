@@ -77,7 +77,7 @@ class FlowControl(object):
     torrent['announce'] = 'http://%s:9200/ann?ls=topsecret' % (self.f.btcp.node_name,)
     btdata = encode(torrent)
 
-    for x in tc.get_torrents():
+    for x in self.f.btcp.tc.get_torrents():
       if x.name == n:
 	self.f.btcp.remove_torrent(x.id)    # no way to update tracker url, so will remove
       self.f.btcp.add_torrent(n, btdata)    # add a new torrent
@@ -92,7 +92,6 @@ class FlowControl(object):
         logging.debug('startGroupDownload(): dr.insert: group: %s, node: %s' %(n,r,))
 
     logging.debug('startGroupDownload(): Sucessfully inserted: f: %s, drs: %s' %(n, drs, ))
-    
 
   def checkGroupDownloaded(self, drs, n):
     ''' check if download is not started in the group - publish torrent for a group '''
