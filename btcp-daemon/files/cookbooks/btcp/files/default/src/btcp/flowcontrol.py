@@ -60,42 +60,61 @@ class FlowControl(object):
     ''' remove a downloaded torrent from DR Cassandra queue, remove from Torrent Client '''
     self.f.btcp.cf['dr'].remove(self.f.btcp.node_name, (n,))
     logging.debug('removeDownloaded(): file %s removed from my DR Cassandra queue' %(n,))
-    #self.f.btcp.cf['queue'].remove(self.f.btcp.node_name, (n,))
-    #logging.debug('removeDownloaded(): file %s removed from my Queue Cassandra queue' %(n,))
 
   def markDownloaded(self, n):
     ''' mark a torrent as downloaded in cassandra '''
-    #try:
-    #  self.f.btcp.cf['dr'].remove(self.f.btcp.node_name, (t.name,))
-    #  self.f.btcp.cf['queue'].remove(t.name, (self.f.btcp.node_name,)) 
-    #except pycassa.cassandra.ttypes.NotFoundException:
-    #  logging.error('markDownloaded(): file %s has just been finished downloading, but not in cassandra in "dr" or "queue"' %(t.name,))
     self.f.btcp.cf['dr'].insert(self.f.btcp.node_name, {n: 'seeding'}) # changing status to seeding in 'dr'
     self.f.btcp.cf['queue'].insert(n, {self.f.btcp.node_name: 'seeding'}) # changing status to seeding in 'queue'
     self.f.btcp.downloaded[n] = datetime.utcnow()
     logging.debug('markDownloaded(): file %s has just been finished downloading: %s' %(n, self.f.btcp.cf['dr'].get(self.f.btcp.node_name, )))
 
+  def startGroupDownload(self, drs, n):
+    ''' if group is not started - publish torrent 'n' for a group of 'drs' '''
+    logging.debug('startGroupDownload(): group %s, starting torrent file %s on node %s' %(str(nodesGrouped[group]),n,self.f.btcp.node_name,))
+
+  def checkGroupDownloaded(self, drs, n):
+    ''' check if download is not started in the group - publish torrent for a group '''
+    # convert data receivers dict to string, example { 'sva1': 'seeding', 'sva2': '2', ...} => 'sva1,sva2,...'
+    nodes = ','.join([x for x in self.f.btcp.cf['queue'].get(n)])   
+    nodesGrouped = self.f.btcp.groupByPattern(nodes)
+    group = self.f.btcp.groupName(self.f.btcp.node_name)
+    for dr in nodesGrouped[group]:
+      if drs[dr] == '2':
+        self.startGroupDownload(drs, nodesGrouped[group])
+	return None
+    logging.debug('checkGroupDownloaded(): group %s is already downloading file %s' %(str(nodesGrouped[group]),n,))
+
   def checkAllDownloaded(self, n):
-    ''' check if all data receivers downloaded a file 'n', mark it as finished then '''
-    try:
+    ''' check if all data receivers downloaded a file 'n'
+        if all finished - mark them as finished 
+    '''
+    try:    # fetch file queue properties
       drs = self.f.btcp.cf['queue'].get(n)
     except pycassa.cassandra.ttypes.NotFoundException:
       logging.error('checkAllDownloaded(): file %s not in cassandra "queue"' %(n,))
       return None
-    for dr in drs:
+
+    self.checkGroupDownloaded(drs, n)    # check if a group download should be started
+
+    for dr in drs:    # exits if not everybody finished
       if drs[dr] != 'seeding':
         logging.debug('checkAllDownloaded(): file %s not finished yet by node %s, status is %s' %(n,dr,drs[dr],))
         return None
-    logging.debug('checkAllDownloaded(): file %s is downloaded by all nodes %s' %(n,str(drs),))
+    
+    self.markAllDownloaded(drs, n)  # mark all downloaded, remove local data
+
+  def markAllDownloaded(self, drs, n):
+    ''' mark a torrent as downloaded for all nodes in cassandra '''
+    logging.debug('markAllDownloaded(): file %s is downloaded by all nodes %s' %(n,str(drs),))
     for dr in drs:
       self.f.btcp.cf['dr'].insert(dr, {n : 'finished'}) # change status for the torrent to finished for each DR
-      logging.debug('checkAllDownloaded(): file %s, changing status to finished for node %s in DR Cassandra queue' %(n,dr,))
+      logging.debug('markAllDownloaded(): file %s, changing status to finished for node %s in DR Cassandra queue' %(n,dr,))
     self.f.btcp.cf['files'].insert(n, {'status' : 'finished'}) 
-    logging.debug('checkAllDownloaded(): file %s, changed status to finished in files Cassandra queue' %(n, ))
+    logging.debug('markAllDownloaded(): file %s, changed status to finished in files Cassandra queue' %(n, ))
     self.f.btcp.cf['queue'].remove(n)
-    logging.debug('checkAllDownloaded(): file %s, removed from queue Cassandra queue' %(n, ))
+    logging.debug('markAllDownloaded(): file %s, removed from queue Cassandra queue' %(n, ))
     del self.f.btcp.downloaded[n]
-    logging.debug('checkAllDownloaded(): file %s remove from hash self.f.btcp.downloaded' %(n, ))
+    logging.debug('markAllDownloaded(): file %s remove from hash self.f.btcp.downloaded' %(n, ))
 
   def cleanDownloads(self):
     ''' check torrents statuses in cassandra, remove torrents downloaded by all clients from cassandra '''

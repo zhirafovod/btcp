@@ -269,6 +269,17 @@ class BtCP(object):
       self.blog.debug('add_torrent: error: %s' %(str(sys.exc_info()),))
       raise 
 
+  def groupName(self, name, pattern='.*(\D{2})\d+$'):
+    ''' match node 'name' against 'pattern' and return group name
+        default is to match nodes by 2 letters identifying node's Data Center ('s(tx)123' => tx, for example)
+        return string - group name
+    '''
+    g = 'unknown'    # 'unknown' group by default
+    m = re.match(pattern, name)  
+    if m.group(1):    # set group if node name matched to regex 'pattern'
+      g = m.group(1)  
+    return g
+
   def groupByPattern(self, dr, pattern='.*(\D{2})\d+$'):
     ''' group Data Receivers to list matching against 'pattern' 
         default is to match nodes by 2 letters identifying node's Data Center ('s(tx)123' => tx, for example)
@@ -277,22 +288,19 @@ class BtCP(object):
     drs = re.sub('\s','',dr).split(',') # remove white-spaces, split to an array by ',', map to dict with a New status
     r = {};    # dict to store result list
     for node in drs: 
-      g = 'unknown'    # 'unknown' group by default
-      m = re.match(pattern, node)  
-      if m.group(1):    # set group if node name matched to regex 'pattern'
-        g = m.group(1)    
+      g = self.groupName(node, pattern)    # return group name
       r[g] = r.get(g, []) + [node]    # add node to group list
-    return r    
+    return r
 
   def prioritizeNodes(self, d):
     ''' receives a dict 'd' with nodes grouped by a key, for example: { 'unknown': ['testnode'], 'tx': ['stx1','stx2','stx3'], 'va': ['sva1','sva2','sva3'] } 
-        return a dict of nodes and turns for each node (who will download 1st, who will download 2nd), example: { 'testnode': 1, 'stx1': 2, 'stx2': 2, 'stx3': 1, ...} 
+        return a dict of nodes and priority for each node (who will download 1st, who will download 2nd), example: { 'testnode': 1, 'stx1': 2, 'stx2': 2, 'stx3': 1, ...} 
     '''
-    t = {};    # a dict of nodes to turns
+    t = {};    # a dict of nodes with priorities
     for k in d.keys():
       for n in d[k]:
-        t[n] = '2'    # set everybody to the 2nd turn by default
-      t[random.choice(d[k])] = '1'    # set one random node to turn 1
+        t[n] = '2'    # set everybody to the 2nd priority by default
+      t[random.choice(d[k])] = '1'    # set one random node for a group priority 1
     return t
 
   def publish(self, f, btdata, dr):
@@ -301,7 +309,6 @@ class BtCP(object):
           btdata - string, file data to transfer
           dr - string, data receivers 
     '''
-
     try: # check if the file already exist
       q = self.cf['files'].get(f)
       self.blog.debug('Error publishing f: %s, file already exist in the queue: %s' %(f,q,))
