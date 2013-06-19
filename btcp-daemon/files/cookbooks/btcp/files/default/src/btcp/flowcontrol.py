@@ -79,8 +79,8 @@ class FlowControl(object):
 
     for x in self.f.btcp.tc.get_torrents():
       if x.name == n:
-	self.f.btcp.remove_torrent(x.id)    # no way to update tracker url, so will remove
-      self.f.btcp.add_torrent(n, btdata)    # add a new torrent
+	self.f.btcp.tc.remove_torrent(x.id)    # no way to update tracker url, so will remove
+    self.f.btcp.tc.add_torrent(n, btdata)    # add a new torrent
 
     key = 'btdata' + group
     self.f.btcp.cf['files'].insert(n, {key: btdata})
