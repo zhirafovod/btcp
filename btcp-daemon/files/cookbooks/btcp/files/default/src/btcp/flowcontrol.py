@@ -82,10 +82,10 @@ class FlowControl(object):
 
     for r in drs:    # insert file to each Data Receivers queue
       if r != self.f.btcp.node_name:
-        self.f.btcp.cf['dr'].insert(r, {f: 'group'})
-        logging.debug('dr.insert: group: %s, node: %s' %(f,r,))
+        self.f.btcp.cf['dr'].insert(r, {n: 'group'})
+        logging.debug('startGroupDownload(): dr.insert: group: %s, node: %s' %(n,r,))
 
-    logging.debug('Sucessfully inserted: f: %s, drs: %s' %(f, drs, ))
+    logging.debug('startGroupDownload(): Sucessfully inserted: f: %s, drs: %s' %(n, drs, ))
     
 
   def checkGroupDownloaded(self, drs, n):
