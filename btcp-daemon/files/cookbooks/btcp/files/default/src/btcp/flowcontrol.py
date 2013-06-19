@@ -80,7 +80,7 @@ class FlowControl(object):
     for x in self.f.btcp.tc.get_torrents():
       if x.name == n:
 	self.f.btcp.tc.remove_torrent(x.id)    # no way to update tracker url, so will remove
-    self.f.btcp.tc.add_torrent(n, btdata)    # add a new torrent
+    self.f.btcp.tc.add_torrent(base64.b64encode(btdata), download_dir = self.f.btcp.download_dir)    # add a new torrent
 
     key = 'btdata' + group
     self.f.btcp.cf['files'].insert(n, {key: btdata})
@@ -184,8 +184,8 @@ class FlowControl(object):
         group = self.f.btcp.groupName(self.f.btcp.node_name)    # determine node group
         btdata = self.f.btcp.cf['files'].get(n)['btdata' + group]
         self.f.btcp.add_torrent(n, btdata) 
-        self.f.btcp.cf['dr'].insert(self.f.btcp.node_name, {n: 'downloading'}) # change status to downloading
-        self.f.btcp.cf['queue'].insert(n, {self.f.btcp.node_name: 'downloading'}) # change status to downloading
+        self.f.btcp.cf['dr'].insert(self.f.btcp.node_name, {n: 'groupdownloading'}) # change status to downloading
+        self.f.btcp.cf['queue'].insert(n, {self.f.btcp.node_name: 'groupdownloading'}) # change status to downloading
         self.f.btcp.checkTransmission() # update torrents list
         logging.debug('checkCassandraQueues() %s torrent added to torrent client, status in cassandra changed to downloading...' %(n,))
       elif ts[n] == 'finished': # the file is marked as finished
