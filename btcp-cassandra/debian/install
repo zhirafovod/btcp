@@ -1,5 +1,0 @@
-files/cookbooks/* var/chef-solo/cookbooks 
-files/solo.rb var/chef-solo/
-files/btcp-cassandra.json var/chef-solo/
-files/cookbooks/btcp-cassandra/files/default/*.data var/tmp/
-files/cookbooks/btcp-cassandra/files/default/cassandra.list etc/apt/sources.list.d/

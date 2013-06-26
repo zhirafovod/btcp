@@ -1,6 +1,0 @@
-README.txt
-*\.log
-debian/python-btcp-daemon
-debian/python-btcp-daemon\.*\.debhelper
-*\.swp
-*.pyc
