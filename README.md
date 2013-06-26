@@ -22,7 +22,7 @@ If your goal is to distribute a file in a datacenter via Bittorent - please chec
 REQUIREMENTS
 -----------
 
-Tested to work with Debian Wheezy (7.0), can be deployed using chef or from Debian package.
+Tested to work with Debian Wheezy (7.0), can be deployed using OpsCode Chef or from Debian package.
 
 DEPLOYMENT
 -----------
