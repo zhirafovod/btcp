@@ -4,6 +4,8 @@
 # Note that the chef template downloads 'x.y.z' not 'x.y.z-r' which should be a duplicate of the latest -r
 use_shell=0
 
+set -x 
+
 prerelease="false"
 
 # Check whether a command exists - returns 0 if it does, 1 if it does not
@@ -166,6 +168,7 @@ case $platform in
       "5") platform_version="6";;
       "6") platform_version="6";;
       "wheezy/sid") platform_version="6";;
+      "7") platform_version="6";;
     esac
     ;;
 esac

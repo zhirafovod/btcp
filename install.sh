@@ -6,8 +6,7 @@
 # 
 # 
 
-# set -x   # uncomment for debbugging output
-
+set -x   # uncomment for debbugging output
 
 COOKBOOKS_PATH='/var/chef-solo/cookbooks'
 SRC=`pwd`
@@ -50,10 +49,11 @@ install_dependencies_apt() {
 }
 
 install_chef11() { 
+  SUDO=`which sudo` 
   test -e `which chef-solo` && 
   [ "`chef-solo -v | cut -d ' ' -f 2 | cut -c 1-2`" -eq 11 ] && 
   echo "chef-solo 11 is already installed" || 
-  $( cat ./files/chef11.install.sh | sudo bash )  # fixed installation for wheezy
+  $( cat ./files/chef11.install.sh | $SUDO bash )  # fixed installation for wheezy
 }
 
 clone_chef_solo_cookbook() {

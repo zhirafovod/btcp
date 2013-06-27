@@ -36,7 +36,7 @@ Recommended way to deploy BtCP cluster is to deploy each node inside a [Linux Co
 ####  Install one btcp-cassandra node
 
 <pre>
-btcp clone https://github.com/zhirafovod/btcp.git && cd btcp && bash isntall.sh btcp-cassandra
+apt-get -y install git && git clone -b v0.2 https://github.com/zhirafovod/btcp.git && cd btcp && bash install.sh btcp-cassandra
 </pre>
 
 #### Install btcp-daemon nodes
@@ -48,7 +48,7 @@ btcp clone https://github.com/zhirafovod/btcp.git && cd btcp && bash isntall.sh 
 
  * install btcp-daemon node
 <pre>
-btcp clone https://github.com/zhirafovod/btcp.git && cd btcp && bash isntall.sh btcp-daemon
+apt-get -y install git && git clone -b v0.2 https://github.com/zhirafovod/btcp.git && cd btcp && bash install.sh btcp-daemon
 </pre>
 
 ### Recommended with OpsCode Chef-client
