@@ -3,14 +3,50 @@
 # script to install BtCP 
 # 
 # 
+# 
+# 
 
-set -x 
+# set -x   # uncomment for debbugging output
 
-COOKBOOKS='/var/chef-solo/cookbooks'
+
+COOKBOOKS_PATH='/var/chef-solo/cookbooks'
 SRC=`pwd`
 
-install_dependencies_debian() {
-  apt-get -y --force-yes install git chef
+
+### functions
+parse_args() {
+  case $1 in 
+    "btcp-cassandra") install_btcp btcp-cassandra ;;
+    "btcp-daemon") install_btcp btcp-daemon ;;
+    *) show_usage ;;
+  esac
+}
+
+show_usage() {
+  echo "Usage: $(basename $0) (btcp-cassandra|btcp-daemon)"
+}
+
+install_btcp() {
+  install_dependencies
+  install_chef11
+  install_cookbooks $1
+  chef-solo -c $SRC/files/solo.rb -j $SRC/files/$1.json
+}
+
+install_dependencies() {
+  . $SRC/files/platform_version.sh    # set variables $machine $platform $platform_version 
+  case $platform in
+    "debian") method="apt" ;;
+    "ubuntu") method="apt" ;;
+    *) echo "no installation method for platform $platform"
+       exit 1
+       ;;
+  esac 
+  "install_dependencies_${method}"
+}
+
+install_dependencies_apt() {
+  apt-get -y --force-yes install git 
 }
 
 install_chef11() { 
@@ -24,23 +60,21 @@ clone_chef_solo_cookbook() {
   g=$1  # src - remote git repository
   l=$2  # dst - local git repository
   if test -d "$l" ; then
-    cd $l && git pull || ( mkdir $l && git clone $g $l )
+    cd $l && git pull || ( echo "Error: unable to clone from $f to $l, directory exists and is not a git repository" ; exit 1 )
   else 
     git clone $g $l
   fi
 }
 
-
-# main
-install_dependencies_debian
-install_chef11
-
-# clone cookbooks for chef-solo to $COOKBOOKS directory
-test -d $COOKBOOKS || mkdir -p $COOKBOOKS
-clone_chef_solo_cookbook "https://github.com/zhirafovod/btcp-daemon-cookbook.git" "$COOKBOOKS/btcp-daemon"
-for c in yum python apt build-essential; do
-  clone_chef_solo_cookbook "https://github.com/opscode-cookbooks/$c.git" "$COOKBOOKS/$c"
-done
+install_cookbooks() {
+  # clone cookbooks for chef-solo to $COOKBOOKS_PATH directory
+  test -d $COOKBOOKS_PATH || mkdir -p $COOKBOOKS_PATH
+  clone_chef_solo_cookbook "https://github.com/zhirafovod/$1-cookbook.git" "$COOKBOOKS_PATH/$1"
+  for c in yum python apt build-essential; do
+    clone_chef_solo_cookbook "https://github.com/opscode-cookbooks/$c.git" "$COOKBOOKS_PATH/$c"
+  done
+}
 
 
-chef-solo -c $SRC/files/solo.rb -j $SRC/files/btcp-daemon.json
+### main
+parse_args $1

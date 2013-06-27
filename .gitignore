@@ -1,6 +1,9 @@
 README.txt
-*\.log
+*-spamp
+debian/btcp-cassandra
+debian/btcp-cassandra.debhelper.log
 debian/python-btcp-daemon
 debian/python-btcp-daemon\.*\.debhelper
-*\.swp
+*\.sw?
 *.pyc
+*\.log

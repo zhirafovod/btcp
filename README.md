@@ -29,9 +29,37 @@ DEPLOYMENT
 
 Recommended way to deploy BtCP cluster is to deploy each node inside a [Linux Containers (LXC)](http://lxc.sourceforge.net/). 
 
- * [BtCP Cassandra node](https://github.com/zhirafovod/btcp/btcp-cassandra)
- * [BtCP Daemon node](https://github.com/zhirafovod/btcp/btcp-daemon)
+> Requirements: btcpcassa1 should resolve to btcp-cassandra instances ip addresses
 
+### Quick start with OpsCode Chef-solo
+
+####  Install one btcp-cassandra node
+
+<pre>
+btcp clone https://github.com/zhirafovod/btcp.git && cd btcp && bash isntall.sh btcp-cassandra
+</pre>
+
+#### Install btcp-daemon nodes
+
+ * make sure btcpcassa1 name resolves to IP adress of btcp-cassandra node on each btcp-daemon node. The easiest way is to write it to /etc/hosts file:
+<pre>
+192.168.100.10 btcpcassa1
+</pre>
+
+ * install btcp-daemon node
+<pre>
+btcp clone https://github.com/zhirafovod/btcp.git && cd btcp && bash isntall.sh btcp-daemon
+</pre>
+
+### Recommended with OpsCode Chef-client
+
+ * OpsCode chef recipes for [BtCP Cassandra node](https://github.com/zhirafovod/btcp/btcp-cassandra-cookbooks)
+ * OpsCode chef recipes for [BtCP Daemon node](https://github.com/zhirafovod/btcp/btcp-daemon-cookbooks)
+
+### Deprecated with Debian Package
+
+ * Debian package source for [BtCP Cassandra node](https://github.com/zhirafovod/btcp/btcp-cassandra-daemon)
+ * Debian package source for [BtCP Daemon node](https://github.com/zhirafovod/btcp/btcp-daemon-debian)
 
 DESIGN
 -----------
