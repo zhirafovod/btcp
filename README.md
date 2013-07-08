@@ -9,11 +9,14 @@ Bittorrent copy (BtCP) is a framework written in Python using Bittorrent to cont
 
 Alfa-stage software, most probably you will need to customize it heavily for your needs
 
+[Documentation](https://github.com/zhirafovod/btcp/wiki/BtCP-Docs)
+[Roadmap](https://github.com/zhirafovod/btcp/wiki/Roadmap)
+
 WHY BtCP?
 -----------
 
 BtCP was designed to provide a way to continuously copy files (a kind of data pipeline) with the following requirements:
- * automatically re-flow data via a faster data center (If we need to copy files from datacenter A to B and C, and connection between A and B is slow - the data to A will be copied mostly via C)
+ * automatically re-flow data via a faster data center (If we need to copy files from datacenter A to B and C, and connection between A and B is slow - the data to B will be copied mostly via C)
  * copy data no more than once across a datanceter 
  * bandwidth throttling
 
@@ -30,13 +33,17 @@ DEPLOYMENT
 Recommended way to deploy BtCP cluster is to deploy each node inside a [Linux Containers (LXC)](http://lxc.sourceforge.net/). 
 
 > Requirements: btcpcassa1 should resolve to btcp-cassandra instances ip addresses
+> Requirements: full host name will be used as a node name, unless 'hostname' is specified in /etc/btcp/btcp.conf
 
 ### Quick start with OpsCode Chef-solo
 
 ####  Install one btcp-cassandra node
 
 <pre>
-apt-get -y install git && git clone -b v0.2 https://github.com/zhirafovod/btcp.git && cd btcp && bash install.sh btcp-cassandra
+apt-get -y install git && 
+git clone -b v0.2 https://github.com/zhirafovod/btcp.git && 
+cd btcp && 
+bash install.sh btcp-cassandra
 </pre>
 
 #### Install btcp-daemon nodes
@@ -48,7 +55,10 @@ apt-get -y install git && git clone -b v0.2 https://github.com/zhirafovod/btcp.g
 
  * install btcp-daemon node
 <pre>
-apt-get -y install git && git clone -b v0.2 https://github.com/zhirafovod/btcp.git && cd btcp && bash install.sh btcp-daemon
+apt-get -y install git && 
+git clone -b v0.2 https://github.com/zhirafovod/btcp.git && 
+cd btcp && 
+bash install.sh btcp-daemon
 </pre>
 
 ### Recommended with OpsCode Chef-client
